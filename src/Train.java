@@ -1,68 +1,85 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
 
 public class Train {
 
-  // DECLARATION OF MAIN ATTRIBUTES
-  private static final String graph = "AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7";
-  private static List<Route> routes = new ArrayList<>();
+    private static final String graph = "AB5, BC4, CD8, DC8, DE6, AD5, CE2, EB3, AE7";
+    private static final HashMap<String, Integer> routes = new HashMap<>();
 
-  public static void main(String[] args) {
 
-    // SPLIT ROUTES IN A VECTOR
-    String[] routeVector = graph.split(", ");
+    /**
+     *  Method to initialize all known routes
+     */
+    public static void getRoutes() {
 
-    for (String route : routeVector) {
-      String a1 = route.substring(0, route.length() - 1);
-      int a2 = Integer.parseInt(route.substring(route.length() - 1));
+        String[] routeVector = graph.split(", ");
 
-      // CHECK IF THE ROUTE IS A VALID ROUTE
-      if (a1.chars().allMatch(Character::isLetter) && a1.length() == 2
-          && Integer.toString(a2).length() == 1) {
-        // IF IS VALID IS ADDED TO LIST OF ROUTES
-        Route r = new Route(a1, a2);
-        routes.add(r);
-      }
-    }
+        for (String itinerary : routeVector) {
 
-    //TEST INPUTS
-    System.out.println(calculateDistance("ABC"));
-    System.out.println(calculateDistance("AD"));
-    System.out.println(calculateDistance("ADC"));
-    System.out.println(calculateDistance("AEBCD"));
-    System.out.println(calculateDistance("AED"));
-  }
+            String path = itinerary.substring(0, itinerary.length() - 1);
+            int distance = Integer.parseInt(itinerary.substring(itinerary.length() - 1));
 
-  static String calculateDistance(String way) {
+            if (path.chars().allMatch(Character::isLetter) && path.length() == 2
+                    && Integer.toString(distance).length() == 1) {
 
-    //CHECK IF THE ENTERED ROUTE IS A VALID ROUTE (ONLY LETTERS)
-    if (way.chars().allMatch(Character::isLetter)) {
-      int index = 0;
-      int distance = 0;
-      int cont = 0;
-
-      //SPLIT THE DIFFERENT PARTS OF THE ROUTE
-      List<String> wayPoints = new ArrayList<>(way.length() - 1);
-      for (int i = 0; i < way.length() - 1; i++) {
-        wayPoints.add(way.substring(index, index + 2));
-        index++;
-      }
-      //CHECK IF ALL PARTS ARE IN THE MAIN LIST OF ROUTES
-      for (Route route : routes) {
-        for (String wayPoint : wayPoints) {
-          if (route.getRoute().equals(wayPoint)) {
-            distance += route.getDistance();
-            cont++;
-          }
+                routes.put(path, distance);
+            }
         }
-      }
-      //IF THE NUMBER OF PARTS FOUNDED DOESN'T MATCH THE TOTAL PARTS OF A ROUTE
-      //ITS AN INCOMPLETE ROUTE AND RETURN NO SUCH ROUTE, ELSE RETURN THE DISTANCE
-      return (way.length() - 1 != cont) ? "NO SUCH ROUTE" : Integer.toString(distance);
     }
-    // IF IT'S NOT VALID RETURN THIS MSG
-    else {
-      return "INVALID TYPE OF ROUTE";
+
+
+    /**
+     * Method to get the total distance of a path
+     * @param path route to calculate
+     * @return total distance
+     */
+    public static String calculateDistance(String path) {
+
+        if (path != null && path.length() != 0) {
+
+            List<String> segments = getSegments(path);
+            int totalDistance = 0;
+
+            for (String segment : segments) {
+
+                if (segment.chars().allMatch(Character::isLetter)) {
+
+                    if (routes.containsKey(segment)){
+
+                        totalDistance += routes.get(segment);
+                    }
+                    else {
+                        return "NO SUCH ROUTE";
+                    }
+                } else {
+                    return "INVALID ROUTE";
+                }
+            }
+
+            return Integer.toString(totalDistance);
+        }
+        return "NO ROUTE PROVIDED";
     }
-  }
+
+
+    /**
+     * Method for dividing the route to be calculated into segments
+     * @param path route to calculate
+     * @return route segments
+     */
+    private static List<String> getSegments(String path) {
+
+        String[] fullPath = path.split("-");
+        List<String> segments = new ArrayList<>();
+
+        for (int i = 1; i < fullPath.length; i++) {
+
+            segments.add(fullPath[i - 1] + fullPath[i]);
+        }
+
+        return segments;
+    }
+
 }
